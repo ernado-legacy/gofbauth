@@ -1,4 +1,4 @@
-package govkauth
+package gofbauth
 
 import (
 	"encoding/json"
@@ -52,6 +52,7 @@ type User struct {
 	}
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
+	Name      string `json:"name"`
 	Gender    string `json:"gender"`
 	Email     string `json:"email"`
 }
@@ -136,12 +137,13 @@ func (client *Client) GetAccessToken(req *http.Request) (token *AccessToken, err
 	return
 }
 
-func (client *Client) GetUser(uid int64) (user User, err error) {
+func (client *Client) GetUser(token string) (user User, err error) {
 	u := client.base(usersGetAction)
 	u.Host = fbGraphHost
 	q := u.Query()
 	q.Del(appIDParameter)
 	q.Del(redirectParameter)
+	q.Add(accessTokenParameter, token)
 	u.RawQuery = q.Encode()
 	res, err := httpClient.Get(u.String())
 	if err != nil {

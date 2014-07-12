@@ -1,4 +1,4 @@
-package govkauth
+package gofbauth
 
 import (
 	"bytes"
@@ -45,7 +45,7 @@ func TestClient(t *testing.T) {
 		}`
 		res.Body = ioutil.NopCloser(bytes.NewBufferString(body))
 		httpClient = &MockClient{res}
-		user, err := client.GetUser(1)
+		user, err := client.GetUser("2")
 		So(err, ShouldBeNil)
 		So(user.FirstName, ShouldEqual, "Alexander")
 		So(user.LastName, ShouldEqual, "Razumov")
@@ -54,20 +54,20 @@ func TestClient(t *testing.T) {
 
 		Convey("Http error", func() {
 			httpClient = &MockClient{nil}
-			_, err := client.GetUser(1)
+			_, err := client.GetUser("1")
 			So(err, ShouldNotBeNil)
 		})
 
 		Convey("json error", func() {
 			body := `[[[]}`
 			res.Body = ioutil.NopCloser(bytes.NewBufferString(body))
-			_, err := client.GetUser(1)
+			_, err := client.GetUser("1")
 			So(err, ShouldNotBeNil)
 		})
 		Convey("Server error", func() {
 			body := `{"response": {"error": "500"}}`
 			res.Body = ioutil.NopCloser(bytes.NewBufferString(body))
-			_, err := client.GetUser(1)
+			_, err := client.GetUser("1")
 			So(err, ShouldNotBeNil)
 		})
 	})
