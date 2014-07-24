@@ -33,24 +33,27 @@ func TestClient(t *testing.T) {
 		body := `{
 		  "id": "1487207854850126", 
 		  "email": "ernado@ya.ru", 
-		  "first_name": "Alexander", 
-		  "gender": "male", 
-		  "last_name": "Razumov", 
-		  "link": "https://www.facebook.com/app_scoped_user_id/1487207854850126/", 
-		  "locale": "ru_RU", 
 		  "name": "Alexander Razumov", 
-		  "timezone": 4, 
-		  "updated_time": "2014-07-12T06:19:29+0000", 
-		  "verified": true
+		  "gender": "male", 
+		  "name": "Alexander Razumov", 
+		  "birthday": "10/10/1994",
+		  "picture": {
+			"data": {
+				"is_silhouette": false,
+				"url": "https://fbcdn-profile-a.akamaihd.net/hprofile-ak-xpf1/t1.0-1/p200x200/10448747_1489977181239860_7181301997006540255_n.jpg"
+			}
+		  }
 		}`
 		res.Body = ioutil.NopCloser(bytes.NewBufferString(body))
 		httpClient = &MockClient{res}
 		user, err := client.GetUser("2")
 		So(err, ShouldBeNil)
-		So(user.FirstName, ShouldEqual, "Alexander")
-		So(user.LastName, ShouldEqual, "Razumov")
+		So(user.Name, ShouldEqual, "Alexander Razumov")
 		So(user.Email, ShouldEqual, "ernado@ya.ru")
 		So(user.Gender, ShouldEqual, "male")
+		So(user.Photo, ShouldEqual, "https://fbcdn-profile-a.akamaihd.net/hprofile-ak-xpf1/t1.0-1/p200x200/10448747_1489977181239860_7181301997006540255_n.jpg")
+		So(user.Birthday.Year(), ShouldEqual, 1994)
+		So(user.Birthday.Month(), ShouldEqual, 10)
 
 		Convey("Http error", func() {
 			httpClient = &MockClient{nil}

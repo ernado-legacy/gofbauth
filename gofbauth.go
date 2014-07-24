@@ -22,7 +22,7 @@ const (
 	appSecretParameter    = "client_secret"
 	version               = "5.23"
 	fieldsParameter       = "fields"
-	fiealdsValue          = "id,name,birthday,gender,picture.type(large)"
+	fiealdsValue          = "id,name,birthday,gender,picture.type(large),email"
 	versionParameter      = "v"
 	responseTypeParameter = "response_type"
 	responseTypeCode      = "code"
@@ -50,20 +50,18 @@ type Client struct {
 }
 
 type User struct {
-	ID        int64     `json:"uid"`
-	FirstName string    `json:"first_name"`
-	LastName  string    `json:"last_name"`
-	Name      string    `json:"name"`
-	Gender    string    `json:"gender"`
-	birthday  string    `json:"birthday"`
-	Birthday  time.Time `json:"-"`
-	Email     string    `json:"email"`
-	Photo     string    `json:"-"`
-	picture   struct {
-		data struct {
-			url string
-		}
-	}
+	ID          int64     `json:"uid"`
+	Name        string    `json:"name"`
+	Gender      string    `json:"gender"`
+	StrBirthday string    `json:"birthday"`
+	Birthday    time.Time `json:"-"`
+	Email       string    `json:"email"`
+	Photo       string    `json:"-"`
+	Picture     struct {
+		Data struct {
+			Url string `json:"url"`
+		} `json:"data"`
+	} `json:"picture"`
 }
 
 // AccessToken describes oath server response
@@ -153,6 +151,7 @@ func (client *Client) GetUser(token string) (user User, err error) {
 	q.Del(appIDParameter)
 	q.Del(redirectParameter)
 	q.Add(accessTokenParameter, token)
+	q.Add(fieldsParameter, fiealdsValue)
 	u.RawQuery = q.Encode()
 	res, err := httpClient.Get(u.String())
 	if err != nil {
@@ -162,12 +161,15 @@ func (client *Client) GetUser(token string) (user User, err error) {
 	if err = decoder.Decode(&user); err != nil {
 		return
 	}
-	if user.Email == "" || user.FirstName == "" {
+	if user.Email == "" || user.Name == "" {
 		err = ErrorBadResponse
 		return
 	}
-	user.Birthday, _ = time.Parse("02/01/2006", user.birthday)
+	user.Birthday, err = time.Parse("02/01/2006", user.StrBirthday)
+	if err != nil {
+		log.Println(err)
+	}
 	log.Printf("%+v", user)
-	user.Photo = user.picture.data.url
+	user.Photo = user.Picture.Data.Url
 	return user, nil
 }
