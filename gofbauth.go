@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"time"
 )
 
 const (
@@ -19,6 +20,8 @@ const (
 	expiresParameter      = "expires"
 	appSecretParameter    = "client_secret"
 	version               = "5.23"
+	fieldsParameter       = "fields"
+	fiealdsValue          = "id,name,birthday,gender,picture.type(large)"
 	versionParameter      = "v"
 	responseTypeParameter = "response_type"
 	responseTypeCode      = "code"
@@ -50,11 +53,19 @@ type User struct {
 	Picture struct {
 		URL string `json:"url"`
 	}
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Name      string `json:"name"`
-	Gender    string `json:"gender"`
-	Email     string `json:"email"`
+	FirstName string    `json:"first_name"`
+	LastName  string    `json:"last_name"`
+	Name      string    `json:"name"`
+	Gender    string    `json:"gender"`
+	birthday  string    `json:"birthday"`
+	Birthday  time.Time `json:"-"`
+	Email     string    `json:"email"`
+	Photo     string    `json:"-"`
+	picture   struct {
+		data struct {
+			url string
+		}
+	}
 }
 
 // AccessToken describes oath server response
@@ -157,5 +168,7 @@ func (client *Client) GetUser(token string) (user User, err error) {
 		err = ErrorBadResponse
 		return
 	}
+	user.Birthday, _ = time.Parse("02/01/2006", user.birthday)
+	user.Photo = user.picture.data.url
 	return user, nil
 }
