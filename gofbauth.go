@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -49,10 +50,7 @@ type Client struct {
 }
 
 type User struct {
-	ID      int64 `json:"uid"`
-	Picture struct {
-		URL string `json:"url"`
-	}
+	ID        int64     `json:"uid"`
 	FirstName string    `json:"first_name"`
 	LastName  string    `json:"last_name"`
 	Name      string    `json:"name"`
@@ -169,6 +167,7 @@ func (client *Client) GetUser(token string) (user User, err error) {
 		return
 	}
 	user.Birthday, _ = time.Parse("02/01/2006", user.birthday)
+	log.Printf("%+v", user)
 	user.Photo = user.picture.data.url
 	return user, nil
 }
